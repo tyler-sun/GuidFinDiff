@@ -236,9 +236,11 @@ def main():
             r_val_data = np.load(r_val_path, allow_pickle=True)
             r_test_data = np.load(r_test_path, allow_pickle=True)
 
-            plt.hist(r_train_data, alpha=0.5, color='tab:blue', label='Train')
-            plt.hist(r_val_data, alpha=0.5, color='tab:orange', label='Validation')
-            plt.hist(r_test_data, alpha=0.5, color='tab:green', label='Test')
+            # plt.hist(r_train_data, alpha=0.8, color='tab:blue', label='Train')
+            # plt.hist(r_val_data, alpha=0.8, color='tab:orange', label='Validation')
+            # plt.hist(r_test_data, alpha=0.8, color='tab:green', label='Test')
+            plt.hist([r_train_data, r_val_data, r_test_data], alpha=0.8, stacked=True,
+                     color=['tab:blue','tab:orange','tab:green'], label=['Train', 'Validation', 'Test'])
             plt.xlabel('Risk')
             plt.ylabel('Frequency')
             plt.title(f'{Path(args.ds_path).name} Dataset Risk Distribution')
