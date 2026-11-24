@@ -2,7 +2,7 @@
 This repo details the code for GuidFinDiff, a tabular diffusion framework for synthesizing minority class samples using underlying feature patterns, which we classify as 'risk', rather than broad class labels. We use diffusion architectures for generating tabular data by conditioning at specific risk values and/or ranges rather than a class label for more precise samples in financial domains.
 
 ## TabDDPM: Modelling Tabular Data with Diffusion Models
-This code builds upon TabDDPM, an existing diffusion model for generating tabular data. To read about TabDDPM, their official report "TabDDPM: Modelling Tabular Data with Diffusion Models" can be found here: ([paper](https://arxiv.org/abs/2209.15421))
+This research builds upon TabDDPM, an earlier diffusion model for generating tabular data. To read about TabDDPM, their official report "TabDDPM: Modelling Tabular Data with Diffusion Models" can be found here: ([paper](https://arxiv.org/abs/2209.15421))
 
 <!-- ## Results
 You can view all the results and build your own tables with this [notebook](notebooks/Reports.ipynb). -->
@@ -63,7 +63,7 @@ All main scripts are in `scripts/` folder:
 
 - `scripts/pipeline.py` are used to train, sample and eval TabDDPM using a given config  
 - `scripts/tune_ddpm.py` -- tune hyperparameters of TabDDPM
-- `scripts/eval_[catboost|mlp|simple].py` -- evaluate synthetic data using a tuned evaluation model or simple models
+- `scripts/eval_[catboost|xgboost|mlp|simple].py` -- evaluate synthetic data using a tuned evaluation model or simple models
 - `scripts/eval_seeds.py` -- eval using multiple sampling and multuple eval seeds
 - `scripts/eval_seeds_simple.py` --  eval using multiple sampling and multuple eval seeds (for simple models)
 - `scripts/tune_evaluation_model.py` -- tune hyperparameters of eval model (CatBoost or MLP)
@@ -85,6 +85,8 @@ Baselines:
 - `CTAB-GAN-Plus/` -- [official repo](https://github.com/Team-TUD/CTAB-GAN-Plus)
 
 ### Examples from TabDDPM
+
+One can run the model without risk conditioning, which can be used to generate samples using class labels for conditioning, or no conditioning at all.
 
 <ins>Run TabDDPM tuning.</ins>   
 
@@ -114,12 +116,20 @@ python scripts/eval_seeds.py --config exp/churn2/ddpm_cb_best/config.toml 10 ddp
 
 ### Run risk conditioned synthesis
 
+<ins>Find model hyperparameters via TabDDPM tuning.</ins>   
+
+Template and example (`--eval_seeds` is optional): 
+```bash
+python scripts/tune_ddpm.py [ds_name] [train_size] synthetic [catboost|mlp] [exp_name] --eval_seeds
+python scripts/tune_ddpm.py churn2 6500 synthetic catboost ddpm_tune --eval_seeds
+```
+
 <ins>Run the risk model for a given dataset using CatBoost (cb) or logistic regression.</ins>
 
 ```bash
 python scripts/find_risk.py [path/to/dataset] --plot --model [cb|logistic regression]
 ```
-To plot the risk distributions from the synthetic data:
+To plot the risk distributions only from the synthetic data:
 ```bash
 python scripts/find_risk.py [path/to/dataset] --plot_only
 ```
@@ -129,7 +139,11 @@ This will produce r_train, r_test, and r_val (if the split is enabled) .npy file
 
 ```bash
 python scripts/pipeline.py --config [path/to/config] --train --sample
+python scripts/pipeline.py --config exp/credit-card/ddpm_tune_best/config.toml --train --sample
+
 python scripts/eval_seeds.py --config [path/to/config] [n_eval_seeds] ddpm merged [catboost|mlp|xgboost] 1 --change_val 
+python scripts/eval_seeds.py --config exp/credit-card/ddpm_tune_best/config.toml 10 ddpm merged xgboost 1 --change_val
+
 ```
 
 The config file and synthesized data are usually expected to be in the exp(eriments) folder. Note the evaluation model should be different from model_type chosen in the config file. More details on configuration parameters can be found in `CONFIG_DESCRIPTION.md`.
